@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 // JANUS headers.
 #include <janus/defaults.h>
@@ -35,6 +36,9 @@
 #define PSET_ID_LABEL "Parameter Set Identifier"
 #define PAYLOAD_SIZE_LABEL "Payload Size"
 #define PAYLOAD_LABEL "Payload"
+#define DESTINATION_ID_LABEL "Destination Identifier"
+#define ACK_REQUEST "Ack Request"
+#define TX_RX_FLAG  "TxRxFlag"
 
 #define BMASK(var, bit)  ((var >> (64 - bit)) & 0x00000001U)
 #define LMASK(var, bits) (var & (0xFFFFFFFFFFFFFFFFU >> (64 - bits)))
@@ -92,6 +96,30 @@ app_data_decode_station_id(janus_uint64_t app_data, janus_app_fields_t app_field
 }
 
 static inline void
+app_data_decode_destination_id(janus_uint64_t app_data, janus_app_fields_t app_fields)
+{
+  char name[] = DESTINATION_ID_LABEL;
+  char value[4];
+
+  janus_uint8_t destination_id = (janus_uint8_t)((app_data >> 10) & (0xFFU));
+  sprintf(value, "%u", destination_id);
+
+  janus_app_fields_add_field(app_fields, name, value);
+}
+
+static inline void
+app_data_decode_ack_request(janus_uint64_t app_data, janus_app_fields_t app_fields)
+{
+  char name[] = ACK_REQUEST;
+  char value[4];
+
+  bool ack_request = (janus_uint8_t)((app_data >> 9) & (0x1U));
+  sprintf(value, "%u", ack_request);
+
+  janus_app_fields_add_field(app_fields, name, value);
+}
+
+static inline void
 app_data_decode_pset_id(janus_uint64_t app_data, janus_app_fields_t app_fields)
 {
   char name[] = PSET_ID_LABEL;
@@ -118,6 +146,20 @@ app_fields_encode_station_id(janus_uint64_t* app_data, janus_app_field_t app_dat
 }
 
 static inline void
+app_fields_encode_destination_id(janus_uint64_t* app_data, janus_app_field_t app_data_field)
+{
+  janus_uint64_t destination_id = atoi(app_data_field->value);
+  *app_data = HMASK(*app_data, 46) | (destination_id << 10) | LMASK(*app_data, 10);
+}
+
+static inline void
+app_fields_encode_ack_request(janus_uint64_t* app_data, janus_app_field_t app_data_field)
+{
+  janus_uint64_t ack_request = atoi(app_data_field->value);
+  *app_data = HMASK(*app_data, 54) | (ack_request << 9) | LMASK(*app_data, 9);
+}
+
+static inline void
 app_fields_encode_pset_id(janus_uint64_t* app_data, janus_app_field_t app_data_field)
 {
   janus_uint64_t pset_id = atoi(app_data_field->value);
@@ -138,6 +180,12 @@ app_data_decode(janus_uint64_t app_data, janus_uint8_t app_data_size, unsigned* 
 {
   // Station Identifier (8 bits).
   app_data_decode_station_id(app_data, app_fields);
+
+  // Destination Identifier (8 bits)
+  app_data_decode_destination_id(app_data, app_fields);
+
+  // Ack Request (1 bit)
+  app_data_decode_ack_request(app_data, app_fields);
 
   // Parameter Set Identifier (12 bits).
   app_data_decode_pset_id(app_data, app_fields);
@@ -169,6 +217,16 @@ app_data_encode(unsigned desired_cargo_size, janus_app_fields_t app_fields, janu
       {
         // Station Identifier (8 bits).
         app_fields_encode_station_id(app_data, app_fields->fields + i);
+      }
+      else if (strcmp(app_fields->fields[i].name, DESTINATION_ID_LABEL) == 0)
+      {
+        // Destination Identifier (8 bits)
+        app_fields_encode_destination_id(app_data, app_fields->fields + i);
+      }
+      else if (strcmp(app_fields->fields[i].name, ACK_REQUEST) == 0)
+      {
+        // Ack Request (1 bit)
+        app_fields_encode_ack_request(app_data, app_fields->fields + i);
       }
       else if (strcmp(app_fields->fields[i].name, PSET_ID_LABEL) == 0)
       {
