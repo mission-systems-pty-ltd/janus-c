@@ -21,6 +21,9 @@
 // Author: Luigi Elia D'Amaro                                             *
 //*************************************************************************
 
+// For more info see:
+// https://www.januswiki.com/tiki-index.php?page=Class+User+Id%3A+016+NATO+JANUS+reference+Implementation
+
 // ISO C headers.
 #include <stdlib.h>
 #include <string.h>
@@ -264,22 +267,22 @@ cargo_decode(janus_uint8_t* cargo, unsigned cargo_size, janus_app_fields_t* app_
   }
 
   char size_string[4];
-  sprintf(size_string, "%3u", cargo_size);
+  sprintf(size_string, "%3u", cargo_size-2);
 
   janus_app_fields_add_field(*app_fields, PAYLOAD_SIZE_LABEL, size_string);
-
-  janus_app_fields_add_blob(*app_fields, PAYLOAD_LABEL, cargo, cargo_size);
+  janus_app_fields_add_blob(*app_fields, PAYLOAD_LABEL, cargo, cargo_size-2);
 
   janus_uint16_t ccrc = janus_crc_16(cargo, cargo_size-2, 0);
   janus_uint16_t pcrc = janus_packet_get_crc16(cargo, cargo_size);
 
+  // Set to NULL since the last 2 bytes are the CRC
   cargo[cargo_size -2] = NULL;
   cargo[cargo_size -1] = NULL;
 
   if (ccrc != pcrc)
   {
     printf("Cargo CRC Failed\n");
-    return 1;
+    return JANUS_ERROR_CARGO_CORRUPTED;
   }
 
   return rv;
