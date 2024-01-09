@@ -157,9 +157,9 @@ rx_data(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
   unsigned read_size = 0;
   unsigned bit_count;
   unsigned byte_count;
-
   while ((read_size = janus_demodulator_execute(rx->dmod, rx->bband_fifo, rx->dmod_bfr + rx->dmod_chip, (state) ? state->bit_prob + rx->dmod_bit_prob_index : 0)) != 0)
   {
+
     rx->bband_time_counter += read_size;
     if (state && state->bit_prob_size != -1)
       ++rx->dmod_bit_prob_index;
@@ -190,14 +190,19 @@ rx_data(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
 
     if (rx->state == STATE_PACKET)
     {
+      printf("STATE PACKET\n");
+
       janus_packet_set_bytes(packet, rx->viterbi_out_bytes);
 
       if (janus_packet_get_crc_validity(packet))
       { 
+        printf("CRC OKAY\n");
         janus_packet_base_decode(packet);
         janus_packet_decode_application_data(packet);
 
-        if (janus_packet_get_cargo_size(packet) == 0)
+        int pkt_size = janus_packet_get_cargo_size(packet);
+        printf("pkt size is %d\n", pkt_size);
+        if (pkt_size == 0)
         {
           janus_uint8_t reservation_repeat_flag;
           double tx_interval = janus_packet_get_tx_interval(packet, &reservation_repeat_flag);
@@ -227,6 +232,8 @@ rx_data(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
         rx->state = STATE_PACKET_CARGO;
         return 0;
       }
+
+      printf("janus_packet_get_validity is %d\n",  janus_packet_get_validity(packet));
       // Dump.
       // Incorrect packet only if verbosity >= 3
       if (rx->verbose >= 3  ||
@@ -514,7 +521,7 @@ janus_rx_execute(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
 
     // GO-CFAR
     rv = (int)janus_go_cfar_execute(rx->go_cfar, rx->chips_alignment_fifo);
-    fprintf(stderr, "rv %f\n", rv);
+    //fprintf(stderr, "rv %f\n", rv);
 
     if (janus_go_cfar_detection_competed(rx->go_cfar) == 0)
     {
@@ -635,6 +642,10 @@ janus_rx_execute(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
         state->snr   = janus_rx_get_snr(rx);
       }
       return 1;
+    }
+    else
+    {
+      // printf(rx->state);
     }
   }
 
@@ -764,3 +775,4 @@ janus_rx_set_threshold(janus_rx_t rx, janus_real_t detection_threshold)
   janus_go_cfar_set_threshold(rx->go_cfar, detection_threshold);
 }
 
+// { "ClassUserID": 16, "ApplicationType": 1, "StationID": "4", "MobilityFlag": "1", "ForwardingCapability": "1", "TxRxFlag": "1", "AckRequest": "1", "DestinationID": "0", "ParameterSetID": "0", "Payload_Size": "16", "Payload": {"Data": [ 49,50,51,52,53,54,55,56,57,48,49,50,51,2,53,54]}}
