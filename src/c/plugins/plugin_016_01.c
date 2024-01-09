@@ -24,6 +24,8 @@
 // For more info see:
 // https://www.januswiki.com/tiki-index.php?page=Class+User+Id%3A+016+NATO+JANUS+reference+Implementation
 
+// TODO: NEED TO ADD ENCODE FUNCTION FOR CRC16 etc
+
 // ISO C headers.
 #include <stdlib.h>
 #include <string.h>
