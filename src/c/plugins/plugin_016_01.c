@@ -51,12 +51,6 @@ static inline unsigned
 cargo_lookup_index(unsigned index)
 {
   // bitshift index to include CRC16
-
-  printf("index before is %u\n", index);
-  // index = index >> 3;
-  //index = index - CRC_BYTES;
-
-  printf("index after is %u\n", index);
   if (index == 0)
     return 0;
   else
@@ -111,7 +105,6 @@ app_data_decode_destination_id(janus_uint64_t app_data, janus_app_fields_t app_f
 
   janus_uint8_t destination_id = (janus_uint8_t)((app_data >> 10) & (0xFFU));
   sprintf(value, "%u", destination_id);
-  printf("destination_id is %d\n", destination_id);
   janus_app_fields_add_field(app_fields, name, value);
 }
 
@@ -123,7 +116,6 @@ app_data_decode_ack_request(janus_uint64_t app_data, janus_app_fields_t app_fiel
 
   bool ack_request = (janus_uint8_t)((app_data >> 9) & (0x1U));
   sprintf(value, "%u", ack_request);
-  printf("ack_request is %d\n", ack_request);
 
   janus_app_fields_add_field(app_fields, name, value);
 }
@@ -197,11 +189,10 @@ app_data_decode(janus_uint64_t app_data, janus_uint8_t app_data_size, unsigned* 
   app_data_decode_ack_request(app_data, app_fields);
 
   // Parameter Set Identifier (12 bits).
-  //app_data_decode_pset_id(app_data, app_fields);
+  //app_data_decode_pset_id(app_data, app_fields); // ? This might be needed but unlikely
 
   // Cargo Size (6 bits).
   *cargo_size = app_data_decode_cargo_size(app_data);
-  printf("My cargo is %d\n", cargo_size);
 
   return 0;
 }
@@ -256,20 +247,16 @@ app_data_encode(unsigned desired_cargo_size, janus_app_fields_t app_fields, janu
 JANUS_PLUGIN_EXPORT janus_uint16_t
 janus_packet_get_crc16(janus_uint8_t* cargo, unsigned cargo_size)
 {
-  janus_uint8_t MSB = cargo[cargo_size - 2];
+  janus_uint8_t MSB = cargo[cargo_size - CRC_BYTES];
   janus_uint8_t LSB = cargo[cargo_size - 1];
-  printf("MSB form pkt is: %d\n", MSB);
-  printf("LSB form pkt is: %d\n", LSB);
-
   janus_uint16_t crc = (MSB << 8) + LSB;
-  printf("crc form pkt is: %d\n", crc);
   return crc;
 }
 
 JANUS_PLUGIN_EXPORT int
 cargo_decode(janus_uint8_t* cargo, unsigned cargo_size, janus_app_fields_t* app_fields)
 {
-  int rv = 1;
+  int rv = 0;
 
   if (*app_fields == 0)
   {
@@ -286,14 +273,14 @@ cargo_decode(janus_uint8_t* cargo, unsigned cargo_size, janus_app_fields_t* app_
   janus_uint16_t ccrc = janus_crc_16(cargo, cargo_size-2, 0);
   janus_uint16_t pcrc = janus_packet_get_crc16(cargo, cargo_size);
 
-  printf("pcrc is %d\n", pcrc);
-  printf("ccrc is %d\n", ccrc);
-
   cargo[cargo_size -2] = NULL;
-  cargo[cargo_size -1] = NULL; 
+  cargo[cargo_size -1] = NULL;
 
-  if (ccrc == pcrc)
-    return 0;
+  if (ccrc != pcrc)
+  {
+    printf("Cargo CRC Failed\n");
+    return 1;
+  }
 
   return rv;
 }
