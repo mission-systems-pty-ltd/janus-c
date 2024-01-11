@@ -100,7 +100,6 @@ janus_crc_16(const janus_uint8_t* data, unsigned data_len, janus_uint16_t crc)
 {
   while (data_len-- > 0)
   {
-    printf("data len %d\n", data_len);
     crc = (crc >> 8) ^ c_crc16_ibm_table[(crc ^ *data++) & 0xff];
   }
 
