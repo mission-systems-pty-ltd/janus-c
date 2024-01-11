@@ -405,7 +405,6 @@ janus_packet_decode_application_data(janus_packet_t pkt)
   janus_int64_t app_data = janus_packet_get_application_data(pkt, &app_data_size);
   
   int decode_error = janus_codecs_decode_app_data(&codecs, pkt->class_user_id, pkt->application_type, app_data, app_data_size, &pkt->cargo_size, pkt->app_fields);
-  printf("Decode error %d\n", decode_error);
   
   if (decode_error != 0)
     return -1;
