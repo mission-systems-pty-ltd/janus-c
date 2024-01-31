@@ -31,8 +31,8 @@
 #include <janus/codec/codec.h>
 #include <janus/error.h>
 
-#define STATION_ID_LABEL "Station Identifier"
-#define PSET_ID_LABEL "Parameter Set Identifier"
+#define STATION_ID_LABEL "StationIdentifier"
+#define PSET_ID_LABEL "ParameterSetIdentifier"
 #define PAYLOAD_SIZE_LABEL "Payload Size"
 #define PAYLOAD_LABEL "Payload"
 
