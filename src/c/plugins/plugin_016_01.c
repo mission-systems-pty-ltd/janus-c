@@ -39,12 +39,12 @@
 #include <janus/crc.h>
 #include <janus/packet.h>
 
-#define STATION_ID_LABEL "Station Identifier"
-#define PSET_ID_LABEL "Parameter Set Identifier"
-#define PAYLOAD_SIZE_LABEL "Payload Size"
+#define STATION_ID_LABEL "StationIdentifier"
+#define PSET_ID_LABEL "ParameterSetIdentifier"
+#define PAYLOAD_SIZE_LABEL "PayloadSize"
 #define PAYLOAD_LABEL "Payload"
-#define DESTINATION_ID_LABEL "Destination Identifier"
-#define ACK_REQUEST "Ack Request"
+#define DESTINATION_ID_LABEL "DestinationIdentifier"
+#define ACK_REQUEST "AckRequest"
 #define TX_RX_FLAG  "TxRxFlag"
 #define CRC_BYTES 2
 
