@@ -2,4 +2,4 @@
    1,                 11520,           4160, Initial JANUS band (9-14 kHz)
    2,                 1200,            400,  Lower Bandwidth for longer range
    3,                 4096,            1365, Medium Bandwidth for longer range
-
+   4,                 8192,            2731, 2nd Medium Bandwidth for longer range  
