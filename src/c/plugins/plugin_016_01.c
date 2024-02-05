@@ -98,7 +98,6 @@ app_data_decode_station_id(janus_uint64_t app_data, janus_app_fields_t app_field
 
   janus_uint8_t station_id = (janus_uint8_t)((app_data >> 18) & (0xFFU));
   sprintf(value, "%u", station_id);
-
   janus_app_fields_add_field(app_fields, name, value);
 }
 
@@ -121,7 +120,6 @@ app_data_decode_ack_request(janus_uint64_t app_data, janus_app_fields_t app_fiel
 
   bool ack_request = (janus_uint8_t)((app_data >> 9) & (0x1U));
   sprintf(value, "%u", ack_request);
-
   janus_app_fields_add_field(app_fields, name, value);
 }
 
@@ -133,7 +131,6 @@ app_data_decode_pset_id(janus_uint64_t app_data, janus_app_fields_t app_fields)
 
   janus_uint16_t pset_id = (janus_uint16_t)((app_data >> 6) & (0xFFFU));
   sprintf(value, "%u", pset_id);
-
   janus_app_fields_add_field(app_fields, name, value);
 }
 
@@ -177,7 +174,7 @@ app_fields_encode_cargo_size(janus_uint64_t* app_data, unsigned desired_cargo_si
 {
   unsigned cargo_size;
   janus_uint64_t cargo_size_index = cargo_lookup_size(desired_cargo_size, &cargo_size);
-  *app_data = HMASK(*app_data, 58) | cargo_size_index;
+  *app_data = HMASK(*app_data, 58) | ( desired_cargo_size );
   return cargo_size;
 }
 
@@ -269,17 +266,13 @@ cargo_decode(janus_uint8_t* cargo, unsigned cargo_size, janus_app_fields_t* app_
   }
 
   char size_string[4];
-  sprintf(size_string, "%3u", cargo_size-2);
+  sprintf(size_string, "%3u", cargo_size);
 
   janus_app_fields_add_field(*app_fields, PAYLOAD_SIZE_LABEL, size_string);
   janus_app_fields_add_blob(*app_fields, PAYLOAD_LABEL, cargo, cargo_size-2);
 
   janus_uint16_t ccrc = janus_crc_16(cargo, cargo_size-2, 0);
   janus_uint16_t pcrc = janus_packet_get_crc16(cargo, cargo_size);
-
-  // Set to NULL since the last 2 bytes are the CRC
-  cargo[cargo_size -2] = NULL;
-  cargo[cargo_size -1] = NULL;
 
   if (ccrc != pcrc)
   {
@@ -319,10 +312,9 @@ cargo_encode(janus_app_fields_t app_fields, janus_uint8_t** cargo, unsigned* car
       {
         return JANUS_ERROR_CARGO_SIZE;
       }
-      
-      *cargo = JANUS_UTILS_MEMORY_REALLOC(*cargo, janus_uint8_t, *cargo_size);
-      memcpy(*cargo, app_fields->fields[i].value, *cargo_size * sizeof(janus_uint8_t));
-      
+
+      char* payload = app_fields->fields[i].value;
+      *cargo = JANUS_UTILS_MEMORY_REALLOC(*payload, janus_uint8_t, *cargo_size);
       rv = 0;
       
       break;
@@ -332,4 +324,4 @@ cargo_encode(janus_app_fields_t app_fields, janus_uint8_t** cargo, unsigned* car
     return 0;
   else
     return rv;
-}
+}     
