@@ -274,6 +274,12 @@ cargo_decode(janus_uint8_t* cargo, unsigned cargo_size, janus_app_fields_t* app_
   janus_uint16_t ccrc = janus_crc_16(cargo, cargo_size-2, 0);
   janus_uint16_t pcrc = janus_packet_get_crc16(cargo, cargo_size);
 
+  // Set to NULL since the last 2 bytes are the CRC
+  cargo[cargo_size -2] = 0;
+  cargo[cargo_size -1] = 0;
+
+  printf("Setting last 2 bytes to 0\n");
+
   if (ccrc != pcrc)
   {
     printf("Cargo CRC Failed\n");
@@ -290,11 +296,13 @@ cargo_encode(janus_app_fields_t app_fields, janus_uint8_t** cargo, unsigned* car
   int cargo_size_found = 0;
 
   unsigned i;
+  printf("cargo size is %d\n", *cargo_size);
   for (i = 0; i != app_fields->field_count; ++i)
   {
     if (strcmp(app_fields->fields[i].name, PAYLOAD_SIZE_LABEL) == 0)
     {
-      *cargo_size = atoi(app_fields->fields[i].value);
+      // Add 2 for the CRC16
+      *cargo_size = atoi(app_fields->fields[i].value) + 2;
       cargo_size_found = 1;
       break;
     }
@@ -306,15 +314,18 @@ cargo_encode(janus_app_fields_t app_fields, janus_uint8_t** cargo, unsigned* car
     {
       if (! cargo_size_found)
       {
-        *cargo_size = strlen(app_fields->fields[i].value);
+        *cargo_size = strlen(app_fields->fields[i].value) + 2;
       }
       if (*cargo_size > JANUS_MAX_PKT_CARGO_SIZE)
       {
         return JANUS_ERROR_CARGO_SIZE;
       }
-
-      char* payload = app_fields->fields[i].value;
-      *cargo = JANUS_UTILS_MEMORY_REALLOC(*payload, janus_uint8_t, *cargo_size);
+      
+      reallocarray(cargo, 2, *cargo_size);
+      *cargo = JANUS_UTILS_MEMORY_REALLOC(*cargo, janus_uint8_t, *cargo_size);
+      printf("cargo size is %d\n", *cargo_size);
+      memcpy(*cargo, app_fields->fields[i].value, *cargo_size * sizeof(janus_uint8_t));
+      
       rv = 0;
       
       break;

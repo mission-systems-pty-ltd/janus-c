@@ -215,10 +215,10 @@ main(int argc, char** argv)
           queried_detection_time = 1;
         }
 
-        if (janus_carrier_sensing_execute(carrier_sensing, &time) > 0)
-          fprintf(stderr, "-> Busy channel t=%f w=%e b=%e\n", time,
-            janus_carrier_sensing_window_power(carrier_sensing),
-            janus_carrier_sensing_background_power(carrier_sensing));
+        // if (janus_carrier_sensing_execute(carrier_sensing, &time) > 0)
+        //   fprintf(stderr, "-> Busy channel t=%f w=%e b=%e\n", time,
+        //     janus_carrier_sensing_window_power(carrier_sensing),
+        //     janus_carrier_sensing_background_power(carrier_sensing));
       }
     }
 
