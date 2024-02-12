@@ -209,7 +209,8 @@ app_data_encode(unsigned desired_cargo_size, janus_app_fields_t app_fields, janu
     return JANUS_ERROR_CARGO_SIZE;
 
   // Cargo Size (6 bits).
-  *cargo_size = app_fields_encode_cargo_size(app_data, desired_cargo_size);
+  // *cargo_size = app_fields_encode_cargo_size(app_data, desired_cargo_size);
+  *cargo_size = desired_cargo_size;
 
   if (app_fields != 0)
   {
