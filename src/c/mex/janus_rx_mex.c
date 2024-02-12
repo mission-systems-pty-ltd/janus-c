@@ -503,8 +503,8 @@ mexFunction(int nargout, mxArray* pargout[], int nargin, const mxArray* pargin[]
         queried_detection_time = 1;
       }
 
-      if (janus_carrier_sensing_execute(carrier_sensing, &time) > 0)
-        fprintf(stderr, "-> Busy channel %f\n", time);
+      // if (janus_carrier_sensing_execute(carrier_sensing, &time) > 0)
+        // fprintf(stderr, "-> Busy channel %f\n", time);
     }
   }
 
