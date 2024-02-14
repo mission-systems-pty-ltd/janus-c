@@ -175,7 +175,9 @@ app_fields_encode_cargo_size(janus_uint64_t* app_data, unsigned desired_cargo_si
   unsigned cargo_size;
   janus_uint64_t cargo_size_index = cargo_lookup_size(desired_cargo_size, &cargo_size);
   *app_data = HMASK(*app_data, 58) | ( desired_cargo_size );
-  return cargo_size;
+  // return back the desired cargo size instead of the  cargo size calculated by the cargo_size_index.
+ // this ensures the cargo size is encoded into app fields but it is not padded to a multiple of 8 if > 4
+  return desired_cargo_size; 
 }
 
 JANUS_PLUGIN_EXPORT int
@@ -209,8 +211,7 @@ app_data_encode(unsigned desired_cargo_size, janus_app_fields_t app_fields, janu
     return JANUS_ERROR_CARGO_SIZE;
 
   // Cargo Size (6 bits).
-  // *cargo_size = app_fields_encode_cargo_size(app_data, desired_cargo_size);
-  *cargo_size = desired_cargo_size;
+  *cargo_size = app_fields_encode_cargo_size(app_data, desired_cargo_size);
 
   if (app_fields != 0)
   {
