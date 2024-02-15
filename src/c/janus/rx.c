@@ -190,18 +190,14 @@ rx_data(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
 
     if (rx->state == STATE_PACKET)
     {
-      printf("STATE PACKET\n");
-
       janus_packet_set_bytes(packet, rx->viterbi_out_bytes);
 
       if (janus_packet_get_crc_validity(packet))
       { 
-        printf("CRC OKAY\n");
         janus_packet_base_decode(packet);
         janus_packet_decode_application_data(packet);
 
         int pkt_size = janus_packet_get_cargo_size(packet);
-        printf("pkt size is %d\n", pkt_size);
         if (pkt_size == 0)
         {
           janus_uint8_t reservation_repeat_flag;
@@ -233,7 +229,6 @@ rx_data(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
         return 0;
       }
 
-      printf("janus_packet_get_validity is %d\n",  janus_packet_get_validity(packet));
       // Dump.
       // Incorrect packet only if verbosity >= 3
       if (rx->verbose >= 3  ||
@@ -241,8 +236,6 @@ rx_data(janus_rx_t rx, janus_packet_t packet, janus_rx_state_t state)
            (janus_packet_get_validity(packet) &&
             janus_packet_get_cargo_error(packet) == 0)))
       {
-        fprintf(stderr, "-> Invalid Packet CRC\n");
-
         state->pset_id = rx->pset->id;
         state->pset_name = rx->pset->name;
         state->cfreq = rx->pset->cfreq;

@@ -279,13 +279,12 @@ cargo_decode(janus_uint8_t* cargo, unsigned cargo_size, janus_app_fields_t* app_
   // Set to NULL since the last 2 bytes are the CRC
   cargo[cargo_size -2] = 0;
   cargo[cargo_size -1] = 0;
-
+  
   if (ccrc != pcrc)
   {
     printf("Cargo CRC Failed\n");
     return JANUS_ERROR_CARGO_CORRUPTED;
   }
-
   return rv;
 }
 
